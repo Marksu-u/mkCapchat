@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cap'Chat</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .images { display: flex; flex-wrap: wrap; }
+        .images img { margin: 10px; cursor: pointer; width: 150px; height: 150px; }
+        .timer { font-size: 24px; }
+        .hint { margin-top: 20px; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <h1>Cap'Chat</h1>
+    <div class="timer">Temps restant : <span id="timer">30</span> secondes</div>
+    <div class="images"></div>
+    <div class="hint"></div>
+    <script>
+        let timer;
+        let timeLeft = 30;
+
+        function startTimer() {
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    alert('Temps écoulé! Réessayez.');
+                    window.location.reload();
+                }
+            }, 1000);
+        }
+
+        async function loadCaptcha() {
+            const response = await fetch('/api/captcha');
+            const data = await response.json();
+            const imagesContainer = document.querySelector('.images');
+            const hintContainer = document.querySelector('.hint');
+
+            hintContainer.innerText = `Indice : ${data.hint}`;
+
+            data.images.forEach(src => {
+                const img = document.createElement('img');
+                img.src = src;
+                img.onclick = () => {
+                    if (src === data.singulier) {
+                        clearInterval(timer);
+                        alert('Correct!');
+                        window.location.reload();
+                    } else {
+                        alert('Incorrect! Réessayez.');
+                    }
+                };
+                imagesContainer.appendChild(img);
+            });
+            startTimer();
+        }
+
+        loadCaptcha();
+    </script>
+</body>
+</html>
